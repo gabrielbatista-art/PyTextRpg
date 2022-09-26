@@ -2,12 +2,23 @@
 ## by Gabriel Mugi @mugiartes
 
 from operator import index
+from Character import Character
 from Dungeon import Dungeon
 
-a : Dungeon = Dungeon()
+a : Dungeon = Dungeon(8, 1)
+p : Character = Character()
 
-a.gridGenerator(8)
-a.wallDetector()
-a.doorSetter()
-a.mazeCreator(2)
-a.mapPrinter()
+p.getPosition(a)
+while True:
+    move : str = str(input("Direcao: "))
+    print(p.charPos)
+    p.MoveCharacter(a.mapa, move)
+    a.mapPrinter()
+    saida : str = str(input("Sair?: "))
+    if saida in ["sim", "1"]:
+        break
+    elif saida in [" "]:
+        pass
+    else:
+        pass
+

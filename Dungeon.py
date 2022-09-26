@@ -1,15 +1,25 @@
 from random import randint
+import Elementos
 
 class Dungeon:
-    def __init__(self):
+    def __init__(self, grid : int, dificulty : int = 1):
         self.mapa : list = []
 
         #Elementos cenário
-        self.elementoParede = "|"
-        self.elementoTeto = "-"
-        self.elementoLivre = " "
-        self.elementoObstaculo = "#"
-        self.elementoPorta = "A"
+        self.elementoParede = Elementos.elementoParede
+        self.elementoTeto = Elementos.elementoTeto
+        self.elementoLivre = Elementos.elementoLivre
+        self.elementoObstaculo = Elementos.elementoObstaculo
+        self.elementoPorta = Elementos.elementoPorta
+
+        self.playerPositioned : bool = False
+        self.playerPos : list = []
+
+        self.gridGenerator(grid)
+        self.wallDetector()
+        self.doorSetter()
+        self.posPlayer()
+        # self.mazeCreator(dificulty)
 
 
     def gridGenerator(self, size : int): #Cria um grid equivalente
@@ -42,7 +52,7 @@ class Dungeon:
         mapaY : int = len(self.mapa)
 
         for linha in range(len(mapa)):
-            lineXobjsQuantity : int = 2 * dificuldade
+            lineXobjsQuantity : int = dificuldade
             lineXobjsSetted : int = 0
 
             for elemento in range(len(mapa[linha])):
@@ -53,7 +63,7 @@ class Dungeon:
 
     def doorSetter(self):
         mapa : list = self.mapa
-        portasQuantity : int = 2
+        portasQuantity : int = 1
         portasSetted : dict = {"top" : 0, "bottom" : 0, "left" : 0, "right" : 0}
 
         for linha in range(len(mapa)):
@@ -64,7 +74,6 @@ class Dungeon:
                 if linha == 0 and elemento > 0 and elemento < (len(mapa[linha]) - 1) and portasSetted["top"] == 0 and random == 1:
                     mapa[linha][elemento] = self.elementoPorta
                     portasSetted["top"] += 1
-                    print(portasSetted["top"])
                 
                 #Seta portas na parte de baixo do labirinto
                 if linha == (len(mapa)-1) and elemento > 0 and elemento < (len(mapa[linha]) - 1) and portasSetted["bottom"] == 0 and random == 1:
@@ -82,6 +91,31 @@ class Dungeon:
                     mapa[linha][elemento] = self.elementoPorta
                     portasSetted["right"] += 1
 
+    def posPlayer(self):
+        mapa : list = self.mapa
+        playerPosX : int
+        playerPosY : int
+        while not self.playerPositioned:
+            for linha in range(len(mapa)):
+                if not self.playerPositioned:
+                    for elemento in range(len(mapa[linha])):
+                        random : int = randint(0, 2)
+                        if mapa[linha][elemento] == Elementos.elementoPorta and random == 1:
+                            mapa[linha][elemento] = Elementos.elementoPlayer
+                            self.playerPositioned = True
+                            playerPosX = elemento
+                            playerPosY = linha
+        self.playerPos = [playerPosX, playerPosY]
+
+    def posEnemies(self):
+        pass
+
     def mapPrinter(self):
         for linha in range(len(self.mapa)):
             print(self.mapa[linha])
+
+
+    #Métodos especiais
+
+    def getPlayerPos(self):
+        return self.playerPos

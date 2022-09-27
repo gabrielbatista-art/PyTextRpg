@@ -2,11 +2,12 @@ from distutils.archive_util import make_archive
 from random import randint
 from Dungeon import Dungeon
 import Elementos
+from Utilis import aroundElementsDetector
 
 class Character:
-    def __init__(self):
+    def __init__(self, cenario : Dungeon, elemento : str):
         self.nome : str
-        self.tipo : str
+        self.tipoChar : str = elemento
         self.str : int
         self.lck : int
         self.defe : int
@@ -14,83 +15,122 @@ class Character:
         self.lvl : int
         self.items : dict = {"arma" : None, "for" : None}
 
+        self.mapa : list = cenario.mapa
+        self.charPositioned : bool = False
+
+        self.aroundEl : dict = {}
         self.charPos : list
+        self.oldPos : str = ""
+        self.actPos : str = ""
 
-    def getPosition(self, mapa : Dungeon):
-        self.charPos = mapa.getPlayerPos()
+    def setStartPosition(self):
+        mapa : list = self.mapa
+        self.charPosX : int
+        self.charPosY : int
+        while not self.charPositioned:
+            for linha in range(len(mapa)):
+                if not self.charPositioned:
+                    for elemento in range(len(mapa[linha])):
+                        random : int = randint(0, 2)
+                        if mapa[linha][elemento] == Elementos.elementoPorta and random == 1:
+                            self.actPos = mapa[linha][elemento]
 
-    def collisionDetector(self, mapa: list, destino : str):
-        charPosX : int = self.charPos[0]
-        charPosY : int= self.charPos[1]
+                            mapa[linha][elemento] = self.tipoChar
 
-        aroundElements : dict = self.aroundElementsDetector(mapa, charPosX, charPosY)
+                            self.charPositioned = True
+                            
+                            self.charPosX = elemento
+                            self.charPosY = linha
+
+        self.charPos = [self.charPosX, self.charPosY]
+
+    def getPosition(self) -> list:
+        return self.charPos
+
+    def collisionDetector(self, mapa: list, destino : str): #Permite ou não que o personagem se mova dependendo dos objetos envolta dele
+        self.charPosX : int = self.charPos[0]
+        self.charPosY : int= self.charPos[1]
+
+        self.aroundElements : dict = self.aroundElementsDetector(mapa, self.charPosX, self.charPosY)
 
         if destino == "up":
-            if aroundElements["top"] in [Elementos.elementoParede, Elementos.elementoTeto, None]:
+            if self.aroundElements["top"] in [Elementos.elementoParede, Elementos.elementoTeto, Elementos.elementoObstaculo, None]:
                 return False
             else:
+                self.aroundEl = self.aroundElements
                 return True
         
         if destino == "down":
-            if aroundElements["bottom"] in [Elementos.elementoParede, Elementos.elementoTeto, None]:
+            if self.aroundElements["bottom"] in [Elementos.elementoParede, Elementos.elementoTeto, Elementos.elementoObstaculo, None]:
                 return False
             else:
+                self.aroundEl = self.aroundElements
                 return True
 
         if destino == "left":
-            if aroundElements["left"] in [Elementos.elementoParede, Elementos.elementoTeto, None]:
+            if self.aroundElements["left"] in [Elementos.elementoParede, Elementos.elementoTeto, Elementos.elementoObstaculo, None]:
                 return False
             else:
+                self.aroundEl = self.aroundElements
                 return True
 
         if destino == "right":
-            if aroundElements["right"] in [Elementos.elementoParede, Elementos.elementoTeto, None]:
+            if self.aroundElements["right"] in [Elementos.elementoParede, Elementos.elementoTeto, Elementos.elementoObstaculo, None]:
                 return False
             else:
-                return True      
+                self.aroundEl = self.aroundElements
+                return True
        
-    def aroundElementsDetector(self, mapa : list, posX : int, posY : int):
-        elementos : dict = {"top" : None, "right" : None, "bottom" : None, "left" : None}
+    def aroundElementsDetector(self, mapa : list, posX : int, posY : int): #Detecta os elementos que estão envolta do personagem nas quatro direções de movimento possível.
+        self.elementos : dict = {"top" : None, "right" : None, "bottom" : None, "left" : None}
 
         for linha in range(len(mapa)):
             if posY - 1 >= 0:
-                elementos["top"] = mapa[posY - 1][posX]
+                self.elementos["top"] = mapa[posY - 1][posX]
 
             if posY + 1 < len(mapa):
-                elementos["bottom"] = mapa[posY + 1][posX]
+                self.elementos["bottom"] = mapa[posY + 1][posX]
 
-            if posX - 1 > 0:
-                elementos["left"] = mapa[posY][posX - 1]
+            if posX - 1 >= 0:
+                self.elementos["left"] = mapa[posY][posX - 1]
 
             if posX + 1 < len(mapa[posY]):
-                elementos["right"] = mapa[posY][posX + 1]
+                self.elementos["right"] = mapa[posY][posX + 1]
 
-        return elementos
+        return self.elementos
 
-    def MoveCharacter(self, mapa : list, destino : str):
-        charPosX = self.charPos[0]
-        charPosY = self.charPos[1]
-        posMove = self.collisionDetector(mapa, destino)
+    def MoveCharacter(self, mapa : list, destino : str): #Move o personagem levando em conta o feedback do collisionDetector()
+        self.charPosX = self.charPos[0]
+        self.charPosY = self.charPos[1]
+        self.posMove = self.collisionDetector(mapa, destino)
 
-        if posMove:
+        if self.posMove:
             if destino == "up":
-                mapa[charPosY - 1][charPosX] = Elementos.elementoPlayer
-                mapa[charPosY][charPosX] = Elementos.elementoLivre
-                self.charPos[1] = charPosY - 1
+                print("A")
+                self.oldPos = self.actPos
+                mapa[self.charPosY - 1][self.charPosX] = self.tipoChar
+                mapa[self.charPosY][self.charPosX] = self.oldPos
+                self.actPos = self.aroundEl["top"]
+                self.charPos[1] = self.charPosY - 1
 
             if destino == "down":
-                mapa[charPosY + 1][charPosX] = Elementos.elementoPlayer
-                mapa[charPosY][charPosX] = Elementos.elementoLivre
-                self.charPos[1] = charPosY + 1
+                self.oldPos = self.actPos
+                mapa[self.charPosY + 1][self.charPosX] = self.tipoChar
+                mapa[self.charPosY][self.charPosX] = self.oldPos
+                self.actPos = self.aroundEl["bottom"]
+                self.charPos[1] = self.charPosY + 1
 
             if destino == "left":
-                mapa[charPosY][charPosX - 1] = Elementos.elementoPlayer
-                mapa[charPosY][charPosX] = Elementos.elementoLivre
-                self.charPos[0] = charPosX - 1
+                self.oldPos = self.actPos
+                mapa[self.charPosY][self.charPosX - 1] = self.tipoChar
+                mapa[self.charPosY][self.charPosX] = self.oldPos
+                self.actPos = self.aroundEl["left"]
+                self.charPos[0] = self.charPosX - 1
 
             if destino == "right":
-                mapa[charPosY][charPosX + 1] = Elementos.elementoPlayer
-                mapa[charPosY][charPosX] = Elementos.elementoLivre
-                self.charPos[0] = charPosX + 1
-
+                self.oldPos = self.actPos
+                mapa[self.charPosY][self.charPosX + 1] = self.tipoChar
+                mapa[self.charPosY][self.charPosX] = self.oldPos
+                self.actPos = self.aroundEl["right"]
+                self.charPos[0] = self.charPosX + 1
         

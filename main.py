@@ -4,15 +4,17 @@
 from operator import index
 from Character import Character
 from Dungeon import Dungeon
+import Elementos as el
 
 a : Dungeon = Dungeon(8, 1)
-p : Character = Character()
+p : Character = Character(a, el.elementoEnemy)
 
-p.getPosition(a)
+p.setStartPosition()
+
 while True:
     move : str = str(input("Direcao: "))
-    print(p.charPos)
     p.MoveCharacter(a.mapa, move)
+    print(p.getPosition())
     a.mapPrinter()
     saida : str = str(input("Sair?: "))
     if saida in ["sim", "1"]:
@@ -21,4 +23,3 @@ while True:
         pass
     else:
         pass
-

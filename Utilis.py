@@ -8,7 +8,7 @@ def aroundElementsDetector(mapa : list, posX : int, posY : int): #Detecta os ele
             if posY + 1 < len(mapa):
                 elementos["bottom"] = mapa[posY + 1][posX]
 
-            if posX - 1 > 0:
+            if posX - 1 >= 0:
                 elementos["left"] = mapa[posY][posX - 1]
 
             if posX + 1 < len(mapa[posY]):

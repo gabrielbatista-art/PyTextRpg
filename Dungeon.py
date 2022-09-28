@@ -13,6 +13,8 @@ class Dungeon:
         self.elementoObstaculo = Elementos.elementoObstaculo
         self.elementoPorta = Elementos.elementoPorta
 
+        self.obstacleQuantity : int = 0
+
         self.gridGenerator(grid)
         self.wallDetector()
         self.mazeCreator(dificulty)
@@ -55,8 +57,9 @@ class Dungeon:
             for elemento in range(len(mapa[linha])):
                 random : int = randint(0, 1)
                 if mapa[linha][elemento] == self.elementoLivre and random == 1 and lineXobjsQuantity >= lineXobjsSetted:
-                    mapa[linha][elemento] = self.elementoPorta
+                    mapa[linha][elemento] = self.elementoObstaculo
                     lineXobjsSetted += 1
+                    self.obstacleQuantity += 1
 
     def doorSetter(self): #Posiciona uma porta em cada parede do mapa
         mapa : list = self.mapa
@@ -100,11 +103,7 @@ class Dungeon:
                             portasSetted["right"] += 1
                             portasQuantity += 1
                             print(portasQuantity)
-
-
-    def posEnemies(self): #Posiciona inimigos no cenário
-        pass
-
+                            
     def mapPrinter(self): #Printa o mapa na tela
         for linha in range(len(self.mapa)):
             print(self.mapa[linha])
